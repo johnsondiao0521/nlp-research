@@ -1,0 +1,7 @@
+
+# for IDE
+.idea
+/01.hmm-viterbi-cut-word/all_train_state.txt
+/01.hmm-viterbi-cut-word/hmm_matrix.pkl
+/models/bert-base-chinese/
+/02.ner/best_model.pt
