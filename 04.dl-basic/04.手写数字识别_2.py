@@ -77,7 +77,7 @@ if __name__ == '__main__':
             label = dev_labels[idx]
 
             pre = image @ w + b
-            pre_idx = np.argmax(pre, axis=1)
+            pre_idx = int(np.argmax(pre, axis=1))
             right_num += int(pre_idx == label)
 
         acc = right_num / len(dev_images)
