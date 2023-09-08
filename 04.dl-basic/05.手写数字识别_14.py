@@ -92,6 +92,7 @@ def sigmoid(x):
 class Linear:
     def __init__(self, in_features, out_features):
         self.x = None
+        self.info = f"Linear({in_features}, {out_features})"
         self.weight = np.random.normal(0, 1, size=(in_features, out_features))
         self.bias = np.zeros((1, out_features))
 
@@ -115,6 +116,7 @@ class Linear:
 class Sigmoid:
     def __init__(self):
         self.result = None
+        self.info = f"Sigmoid"
 
     def forward(self, x):
         self.result = sigmoid(x)
@@ -127,6 +129,7 @@ class Sigmoid:
 class Tanh:
     def __init__(self):
         self.result = None
+        self.info = f"Tanh"
 
     def forward(self, x):
         self.result = 2 * sigmoid(2 * x) - 1
@@ -139,6 +142,7 @@ class Tanh:
 class ReLU:
     def __init__(self):
         self.negative = None
+        self.info = f"ReLU"
 
     def forward(self, x):
         self.negative = x < 0
@@ -153,6 +157,7 @@ class ReLU:
 class Softmax:
     def __init__(self):
         self.p = None
+        self.info = f"Softmax"
 
     def forward(self, x):
         self.p = softmax(x)
@@ -176,6 +181,14 @@ class ModuleList:
         for layer in self.layers[::-1]:
             G = layer.backward(G)
         return G
+
+    def __repr__(self):
+        info = ""
+        for layer in self.layers:
+            info += layer.info
+            info += "\n"
+
+        return info
 
 
 if __name__ == '__main__':
@@ -210,6 +223,7 @@ if __name__ == '__main__':
     ]
 
     model = ModuleList(layers)
+    print(model)
 
     epoch = 100
     lr = 0.01
