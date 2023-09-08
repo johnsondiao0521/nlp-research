@@ -89,8 +89,17 @@ def sigmoid(x):
     return result
 
 
-class Linear:
+class Module:
+    def __init__(self):
+        self.info = "Module:\n"
+
+    def __repr__(self):
+        return self.info
+    
+
+class Linear(Module):
     def __init__(self, in_features, out_features):
+        super(Linear, self).__init__()
         self.x = None
         self.info = f"Linear({in_features}, {out_features})"
         self.weight = np.random.normal(0, 1, size=(in_features, out_features))
@@ -113,8 +122,9 @@ class Linear:
         return delta_x  # 实际上返回的是对B矩阵的倒数
 
 
-class Sigmoid:
+class Sigmoid(Module):
     def __init__(self):
+        super(Sigmoid, self).__init__()
         self.result = None
         self.info = f"Sigmoid"
 
@@ -126,8 +136,9 @@ class Sigmoid:
         return G * self.result * (1 - self.result)
 
 
-class Tanh:
+class Tanh(Module):
     def __init__(self):
+        super(Tanh, self).__init__()
         self.result = None
         self.info = f"Tanh"
 
@@ -139,8 +150,9 @@ class Tanh:
         return G * (1 - self.result ** 2)
 
 
-class ReLU:
+class ReLU(Module):
     def __init__(self):
+        super(ReLU, self).__init__()
         self.negative = None
         self.info = f"ReLU"
 
@@ -154,8 +166,9 @@ class ReLU:
         return G
 
 
-class Softmax:
+class Softmax(Module):
     def __init__(self):
+        super(Softmax, self).__init__()
         self.p = None
         self.info = f"Softmax"
 
