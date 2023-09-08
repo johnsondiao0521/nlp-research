@@ -97,27 +97,33 @@ class Module:
         return self.info
     
 
+class Parameters():
+    def __init__(self, weight):
+        self.weight = weight
+        self.grad = np.zeros_like(self.weight)
+
+
 class Linear(Module):
     def __init__(self, in_features, out_features):
         super(Linear, self).__init__()
         self.x = None
         self.info = f"Linear({in_features}, {out_features})"
-        self.weight = np.random.normal(0, 1, size=(in_features, out_features))
-        self.bias = np.zeros((1, out_features))
+        self.W = Parameters(np.random.normal(0, 1, size=(in_features, out_features)))
+        self.B = Parameters(np.zeros((1, out_features)))
 
     def forward(self, x):
         self.x = x # 存起来，方便backward的时候运用
-        result = x @ self.weight + self.bias
+        result = x @ self.W.weight + self.B.weight
         return result
     
     def backward(self, G):
-        delta_w = self.x.T @ G
-        delta_b = np.mean(G, axis=0, keepdims=True)
+        self.W.grad = self.x.T @ G
+        self.B.grad = np.mean(G, axis=0, keepdims=True)
 
-        self.weight -= lr * delta_w  # lr是全局变量，声明在main中
-        self.bias -= lr * delta_b
+        self.W.weight -= lr * self.W.grad  # lr是全局变量，声明在main中
+        self.B.weight -= lr * self.B.grad
 
-        delta_x = G @ self.weight.T
+        delta_x = G @ self.W.weight.T
 
         return delta_x  # 实际上返回的是对B矩阵的倒数
 
