@@ -1,5 +1,5 @@
 """
-@Desc:ModuleList用model封装一下。
+@Desc:Tanh 和 ReLU 激活函数封装
 """
 import numpy as np
 import os
@@ -92,6 +92,7 @@ def sigmoid(x):
 class Module:
     def __init__(self):
         self.info = "Module:\n"
+        self.params = []
 
     def __repr__(self):
         return self.info
@@ -111,6 +112,9 @@ class Linear(Module):
         self.W = Parameters(np.random.normal(0, 1, size=(in_features, out_features)))
         self.B = Parameters(np.zeros((1, out_features)))
 
+        self.params.append(self.W)
+        self.params.append(self.B)
+
     def forward(self, x):
         self.x = x # 存起来，方便backward的时候运用
         result = x @ self.W.weight + self.B.weight
@@ -126,6 +130,44 @@ class Linear(Module):
         delta_x = G @ self.W.weight.T
 
         return delta_x  # 实际上返回的是对B矩阵的倒数
+
+
+class Conv2D(Module):
+    def __init__(self, in_channel, out_channel):
+        super(Conv2D, self).__init__()
+        self.x = None
+        self.info +=  f"     Conv2D({in_channel, out_channel})"
+        self.W = Parameters(np.random.normal(0, 1, size=(in_channel, out_channel)))
+        self.B = Parameters(np.zeros((1, out_channel)))
+
+        self.params.append(self.W)
+        self.params.append(self.B)
+
+    def forward(self, x):
+        result = x @ self.W.weight + self.B.weight
+        self.x = result
+        return result
+
+    def backward(self, G):
+        self.W.grad = self.x.T @ G
+        self.B.grad = np.sum(G, axis=0)
+
+        delta_x = G @ self.W.weight.T
+
+        return delta_x
+
+
+class SGD:
+    def __init__(self, patameters, lr):
+        self.parameters = patameters
+        self.lr = lr
+
+    def step(self):
+        for param in self.parameters:
+            param.weight -= self.lr * param.grd
+
+    def zero_grad(self):
+        pass
 
 
 class Sigmoid(Module):
@@ -236,7 +278,7 @@ class Model:
                 Linear(784, 256),
                 ReLU(),
                 Dropout(0.1),
-                Linear(256, 300),
+                Conv2D(256, 300),
                 Tanh(),
                 Dropout(0.2),
                 Linear(300, 10),
@@ -260,6 +302,13 @@ class Model:
     def __repr__(self):
         return self.model_list.__repr__()
 
+    def parameters(self):
+        all_parameters = []
+        for layer in self.model_list.layers:
+            all_parameters.extend(layer.params)
+
+        return all_parameters
+
 
 if __name__ == '__main__':
     train_images = load_images(os.path.join("data", "mnist", "train-images.idx3-ubyte")) / 255
@@ -275,6 +324,8 @@ if __name__ == '__main__':
 
     batch_size = 50
     shuffle = False
+    epoch = 100
+    lr = 0.01
 
     train_dataset = Dataset(train_images, train_labels)
     train_dataloader = DataLoader(train_dataset, batch_size, shuffle)
@@ -283,10 +334,8 @@ if __name__ == '__main__':
     dev_dataloader = DataLoader(dev_dataset, batch_size, shuffle)
 
     model = Model()
+    opt = SGD(model.parameters(), lr=lr)
     print(model)
-
-    epoch = 100
-    lr = 0.01
 
     for e in range(epoch):
         for x, l in train_dataloader:
