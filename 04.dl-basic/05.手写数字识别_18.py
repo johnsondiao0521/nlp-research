@@ -193,8 +193,33 @@ class MSGD:
 
 
 class Adam():
-    def __init__(self):
-        pass
+    def __init__(self, parameters, lr=0.01, beta1=0.9, beta2=0.999, e=1e-8):
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.parameters = parameters
+        self.lr = lr
+        self.e = e
+
+        self.t = 0
+
+        for p in self.parameters:
+            p.m = 0
+            p.v = 0
+
+    def step(self):
+        self.t += 1
+        for p in self.parameters:
+            gt = p.grad
+            p.m = self.beta1 * p.m + (1 - self.beta1) * gt
+            p.v = self.beta2 * p.v + (1 - self.beta2) * gt * gt
+            mt_ = p.m / (1 - self.beta1**self.t)
+            vt_ = p.v / (1 - self.beta2**self.t)
+
+            p.weight = p.weight - self.lr * mt_ / (np.sqrt(vt_) + self.e)
+
+    def zero_grad(self):
+        for param in self.parameters:
+            param.grad = 0
 
 
 class Sigmoid(Module):
@@ -362,7 +387,8 @@ if __name__ == '__main__':
 
     model = Model()
     # opt = SGD(model.parameters(), lr=lr)
-    opt = MSGD(model.parameters(), lr=lr)
+    # opt = MSGD(model.parameters(), lr=lr)
+    opt = Adam(model.parameters(), lr=lr)
     print(model)
 
     for e in range(epoch):
