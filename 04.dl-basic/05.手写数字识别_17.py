@@ -1,5 +1,5 @@
 """
-@Desc:Tanh 和 ReLU 激活函数封装
+@Desc:添加SGD类来统一更新Parameters里面的参数。
 """
 import numpy as np
 import os
@@ -133,10 +133,9 @@ class Linear(Module):
 
 
 class Conv2D(Module):
-    def __init__(self, in_channel, out_channel):
+    def __init__(self,in_channel,out_channel):
         super(Conv2D, self).__init__()
-        self.x = None
-        self.info +=  f"     Conv2D({in_channel, out_channel})"
+        self.info += f"     Conv2D({in_channel, out_channel})"
         self.W = Parameters(np.random.normal(0, 1, size=(in_channel, out_channel)))
         self.B = Parameters(np.zeros((1, out_channel)))
 
@@ -145,12 +144,16 @@ class Conv2D(Module):
 
     def forward(self, x):
         result = x @ self.W.weight + self.B.weight
-        self.x = result
+
+        self.x = x
         return result
 
     def backward(self, G):
         self.W.grad = self.x.T @ G
         self.B.grad = np.sum(G, axis=0)
+
+        # self.W.weight -= lr * (self.W.grad)
+        # self.B.weight -= lr * (self.B.grad)
 
         delta_x = G @ self.W.weight.T
 
@@ -158,13 +161,13 @@ class Conv2D(Module):
 
 
 class SGD:
-    def __init__(self, patameters, lr):
-        self.parameters = patameters
+    def __init__(self, parameters, lr):
+        self.parameters = parameters
         self.lr = lr
 
     def step(self):
         for param in self.parameters:
-            param.weight -= self.lr * param.grd
+            param.weight -= self.lr * param.grad
 
     def zero_grad(self):
         pass
@@ -341,6 +344,9 @@ if __name__ == '__main__':
         for x, l in train_dataloader:
             loss = model.forward(x, label=l)
             model.backward()
+
+            opt.step()
+            opt.zero_grad()
 
         print(loss)
 
