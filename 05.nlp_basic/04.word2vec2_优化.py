@@ -17,7 +17,7 @@ def read_data(file):
     return cut_data
 
 
-def buidl_word_2_index(all_data):
+def build_word_2_index(all_data):
     word_2_index = {}
     for data in all_data:
         for w in data:
@@ -40,7 +40,7 @@ def softmax(x):
 
 if __name__ == '__main__':
     all_data = read_data(os.path.join('..', 'data', 'word2vec', '数学原始数据.csv'))[:500]
-    word_2_index = buidl_word_2_index(all_data)
+    word_2_index = build_word_2_index(all_data)
     words_len = len(word_2_index)
     word_2_onehot = build_word_2_onehot(words_len)
 

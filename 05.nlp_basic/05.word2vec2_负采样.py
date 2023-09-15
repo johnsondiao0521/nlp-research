@@ -58,7 +58,7 @@ def sigmoid(x):
 
 
 if __name__ == '__main__':
-    all_data = read_data(os.path.join('..', 'data', 'word2vec', '数学原始数据.csv'))[:500]
+    all_data = read_data(os.path.join('..', 'data', 'word2vec', '数学原始数据.csv'))
     word_2_index = buidl_word_2_index(all_data)
     index_2_word = list(word_2_index)
     words_len = len(word_2_index)
