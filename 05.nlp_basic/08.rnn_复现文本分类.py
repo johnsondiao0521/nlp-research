@@ -48,11 +48,38 @@ class MyDataset(Dataset):
         return len(self.all_text)
 
 
+class MyRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, batch_first=True):
+        super(MyRNN, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+
+        self.W = nn.Linear(input_size, hidden_size)
+        self.U = nn.Linear(hidden_size, hidden_size)
+        self.tanh = nn.Tanh()
+
+    def forward(self, x):
+        batch_size, seq_len, emb_size = x.shape
+        t = torch.zeros((1, self.hidden_size), device=x.device)
+        result = torch.zeros(size=(batch_size, seq_len, self.hidden_size), device=x.device)
+
+        for i in range(seq_len):
+            w_emb = x[:, i]
+            h1 = self.W.forward(w_emb)
+            h2 = h1 + t
+            h3 = self.tanh(h2)
+
+            t = self.U.forward(h3)
+
+            result[:, i] = h3
+        return result, t
+
+
 class MyModel(nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
         self.emb = nn.Embedding(word_size, emb_dim)
-        self.rnn = nn.RNN(emb_dim, rnn_hidden_num, batch_first=True)
+        self.rnn = MyRNN(emb_dim, rnn_hidden_num, batch_first=True)
         self.cls = nn.Linear(rnn_hidden_num, class_num)
         self.loss_fun = nn.CrossEntropyLoss()
 
@@ -76,7 +103,7 @@ if __name__ == '__main__':
 
     epoch = 10
     max_len = 30
-    batch_size = 20
+    batch_size = 10
     word_size = len(word_2_index)
     emb_dim = 200
     class_num = 10
